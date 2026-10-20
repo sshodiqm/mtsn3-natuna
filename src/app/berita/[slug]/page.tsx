@@ -5,6 +5,9 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Calendar, ArrowLeft, Tag, Share2 } from 'lucide-react';
 
+// Tambahkan baris ini agar Vercel merender data Supabase secara dinamis
+export const dynamic = 'force-dynamic';
+
 export default async function DetailBeritaPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 

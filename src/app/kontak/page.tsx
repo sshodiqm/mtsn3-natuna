@@ -6,6 +6,9 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle } from 'lucide-react';
 
+// Tambahkan baris ini agar Vercel merender data Supabase secara dinamis
+export const dynamic = 'force-dynamic';
+
 export default function KontakPage() {
   const [settings, setSettings] = useState<any>(null);
   const [menus, setMenus] = useState<any[]>([]);
