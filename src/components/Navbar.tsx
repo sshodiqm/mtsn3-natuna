@@ -43,7 +43,7 @@ export default function Navbar({ menus, settings }: { menus: MenuItem[]; setting
             </span>
           </div>
           <div className="flex items-center gap-3 font-medium text-[11px] text-amber-300">
-            <span>✨ Portal Resmi Madrasah Tsanawiyah Negeri 3 Natuna</span>
+            <span>Portal Resmi Madrasah Tsanawiyah Negeri 3 Natuna</span>
           </div>
         </div>
       </div>
