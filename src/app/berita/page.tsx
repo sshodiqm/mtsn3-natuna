@@ -4,9 +4,6 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Calendar, Newspaper, ArrowRight, Tag } from 'lucide-react';
 
-// Tambahkan baris ini agar Vercel merender data Supabase secara dinamis
-export const dynamic = 'force-dynamic';
-
 export default async function BeritaPage() {
   const { data: settings } = await supabase.from('site_settings').select('*').single();
   const { data: menus } = await supabase.from('menus').select('*').order('order_index');
