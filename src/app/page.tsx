@@ -23,7 +23,7 @@ export default async function HomePage() {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-amber-300 text-xs font-semibold uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5" /> Selamat Datang di Website Resmi
+              <Sparkles className="w-3.5 h-3.5" /> Selamat Datang di Website MTsN 3 Natuna
             </div>
             <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight tracking-tight">
               {settings?.hero_title || 'Mewujudkan Generasi Islami, Cerdas, dan Berakhlaqul Karimah'}
