@@ -4,6 +4,9 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { ArrowRight, BookOpen, Award, Users, GraduationCap, Newspaper, Calendar, Sparkles, CheckCircle2 } from 'lucide-react';
 
+// Memaksa Next.js untuk selalu mengambil data terbaru dari Supabase (Tanpa Cache)
+export const revalidate = 0;
+
 export default async function HomePage() {
   const { data: settings } = await supabase.from('site_settings').select('*').single();
   const { data: menus } = await supabase.from('menus').select('*').order('order_index');
