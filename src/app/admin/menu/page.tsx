@@ -3,11 +3,14 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Plus, Trash2, Edit2, ArrowUp, ArrowDown, Save, X, Menu as MenuIcon, Loader2, CornerDownRight } from 'lucide-react';
+import RichTextEditor from '@/components/RichTextEditor';
 
 interface MenuItem {
   id: string;
   title: string;
   url: string;
+  slug?: string | null;
+  content?: string | null;
   parent_id: string | null;
   order_index: number;
   is_active: boolean;
@@ -23,6 +26,8 @@ export default function MenuBuilderPage() {
   // Form State
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
+  const [slug, setSlug] = useState('');
+  const [content, setContent] = useState('');
   const [parentId, setParentId] = useState<string>('');
   const [orderIndex, setOrderIndex] = useState(0);
 
@@ -43,13 +48,34 @@ export default function MenuBuilderPage() {
     setLoading(false);
   };
 
+  const generateSlug = (text: string) => {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+  };
+
+  const handleTitleChange = (newTitle: string) => {
+    setTitle(newTitle);
+    if (!editingId) {
+      const generatedSlug = generateSlug(newTitle);
+      setSlug(generatedSlug);
+      setUrl(`/${generatedSlug}`);
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
 
+    const finalSlug = slug ? slug : generateSlug(title);
+    const finalUrl = url ? url : `/${finalSlug}`;
+
     const payload = {
       title,
-      url,
+      url: finalUrl,
+      slug: finalSlug,
+      content,
       parent_id: parentId === '' ? null : parentId,
       order_index: Number(orderIndex) || menus.length + 1,
     };
@@ -69,7 +95,7 @@ export default function MenuBuilderPage() {
       resetForm();
       fetchMenus();
     }
-    
+
     setSaving(false);
   };
 
@@ -77,6 +103,8 @@ export default function MenuBuilderPage() {
     setEditingId(menu.id);
     setTitle(menu.title);
     setUrl(menu.url);
+    setSlug(menu.slug || '');
+    setContent(menu.content || '');
     setParentId(menu.parent_id || '');
     setOrderIndex(menu.order_index);
     setIsModalOpen(true);
@@ -100,18 +128,19 @@ export default function MenuBuilderPage() {
   const resetForm = () => {
     setTitle('');
     setUrl('');
+    setSlug('');
+    setContent('');
     setParentId('');
     setOrderIndex(0);
     setEditingId(null);
     setIsModalOpen(false);
   };
 
-  // Mengelompokkan menu utama dan submenu
   const mainMenus = menus.filter((m) => !m.parent_id);
   const getSubmenus = (parentId: string) => menus.filter((m) => m.parent_id === parentId);
 
   return (
-    <div className="min-h-screen bg-slate-100 p-8">
+    <div className="space-y-6">
       <div className="max-w-5xl mx-auto">
         {/* Header Section */}
         <div className="flex justify-between items-center mb-6">
@@ -120,7 +149,7 @@ export default function MenuBuilderPage() {
               <MenuIcon className="w-7 h-7 text-emerald-600" /> Kelola Navbar & Menu
             </h1>
             <p className="text-slate-500 text-sm mt-1">
-              Atur menu navigasi utama dan submenu yang akan muncul pada tampilan depan website.
+              Atur menu navigasi utama, submenu, beserta isi konten halaman dinamisnya.
             </p>
           </div>
           <button
@@ -232,11 +261,11 @@ export default function MenuBuilderPage() {
 
       {/* Modal Form Tambah/Edit Menu */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
-            <div className="flex justify-between items-center mb-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-xl max-w-3xl w-full p-6 shadow-xl my-8">
+            <div className="flex justify-between items-center mb-4 border-b pb-3">
               <h3 className="font-bold text-lg text-slate-800">
-                {editingId ? 'Edit Menu' : 'Tambah Menu Baru'}
+                {editingId ? 'Edit Menu / Halaman' : 'Tambah Menu / Halaman Baru'}
               </h3>
               <button onClick={resetForm} className="text-slate-400 hover:text-slate-600">
                 <X className="w-5 h-5" />
@@ -244,49 +273,64 @@ export default function MenuBuilderPage() {
             </div>
 
             <form onSubmit={handleSave} className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Nama Menu</label>
-                <input
-                  type="text"
-                  required
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Contoh: Profil, PPDB, Berita"
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none text-slate-800"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Nama Menu</label>
+                  <input
+                    type="text"
+                    required
+                    value={title}
+                    onChange={(e) => handleTitleChange(e.target.value)}
+                    placeholder="Contoh: Sejarah, Visi Misi"
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none text-slate-800"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">URL Slug</label>
+                  <input
+                    type="text"
+                    value={slug}
+                    onChange={(e) => {
+                      setSlug(e.target.value);
+                      setUrl(`/${e.target.value}`);
+                    }}
+                    placeholder="sejarah-madrasah"
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none text-slate-800"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">URL / Link Target</label>
-                <input
-                  type="text"
-                  required
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  placeholder="Contoh: /profil atau https://..."
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none text-slate-800"
-                />
-              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">URL / Link Target</label>
+                  <input
+                    type="text"
+                    required
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    placeholder="Contoh: /sejarah atau https://..."
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none text-slate-800"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Induk Menu (Parent)</label>
-                <select
-                  value={parentId}
-                  onChange={(e) => setParentId(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none text-slate-800"
-                >
-                  <option value="">-- Menu Utama (Tanpa Induk) --</option>
-                  {mainMenus
-                    .filter((m) => m.id !== editingId)
-                    .map((m) => (
-                      <option key={m.id} value={m.id}>
-                        Submenu dari: {m.title}
-                      </option>
-                    ))}
-                </select>
-                <p className="text-xs text-slate-400 mt-1">
-                  Pilih induk jika ingin menu ini menjadi submenu (*dropdown*).
-                </p>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Induk Menu (Parent)</label>
+                  <select
+                    value={parentId}
+                    onChange={(e) => setParentId(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none text-slate-800"
+                  >
+                    <option value="">-- Menu Utama (Tanpa Induk) --</option>
+                    {mainMenus
+                      .filter((m) => m.id !== editingId)
+                      .map((m) => (
+                        <option key={m.id} value={m.id}>
+                          Submenu dari: {m.title}
+                        </option>
+                      ))}
+                  </select>
+                </div>
               </div>
 
               <div>
@@ -300,7 +344,15 @@ export default function MenuBuilderPage() {
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Isi Konten Halaman (Rich Text)</label>
+                <RichTextEditor value={content} onChange={setContent} />
+                <p className="text-xs text-slate-400 mt-1">
+                  Isi bagian ini jika menu/submenu ditujukan untuk menampilkan halaman bacaan khusus (seperti Sejarah, Visi Misi, atau Profil).
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t">
                 <button
                   type="button"
                   onClick={resetForm}
@@ -314,7 +366,7 @@ export default function MenuBuilderPage() {
                   className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 flex items-center gap-2"
                 >
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                  Simpan Menu
+                  Simpan Menu & Konten
                 </button>
               </div>
             </form>

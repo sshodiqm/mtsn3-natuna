@@ -3,7 +3,9 @@ import { notFound } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { Calendar, ArrowLeft, Tag, Share2 } from 'lucide-react';
+import { Calendar, ArrowLeft, Tag } from 'lucide-react';
+
+export const revalidate = 0;
 
 export default async function DetailBeritaPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -51,7 +53,7 @@ export default async function DetailBeritaPage({ params }: { params: Promise<{ s
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-4xl font-black text-slate-900 leading-tight tracking-tight">
+          <h1 className="text-2xl sm:text-4xl font-black text-slate-900 leading-tight tracking-tight break-words">
             {post.title}
           </h1>
         </div>
@@ -63,9 +65,9 @@ export default async function DetailBeritaPage({ params }: { params: Promise<{ s
           </div>
         )}
 
-        {/* Konten Artikel */}
+        {/* Konten Artikel (Dengan Pemutus Kata Otomatis & Penataan HTML React Quill) */}
         <article
-          className="bg-white p-8 sm:p-12 rounded-3xl border border-slate-200/80 shadow-sm text-slate-700 text-sm sm:text-base leading-relaxed space-y-4 font-sans prose max-w-none"
+          className="bg-white p-6 sm:p-10 rounded-3xl border border-slate-200/80 shadow-sm text-slate-800 text-sm sm:text-base leading-relaxed font-sans break-words overflow-hidden [&>p]:mb-4 [&>h2]:text-2xl [&>h2]:font-bold [&>h2]:mt-6 [&>h2]:mb-3 [&>h3]:text-xl [&>h3]:font-semibold [&>h3]:mt-4 [&>h3]:mb-2 [&>ul]:list-disc [&>ul]:ml-6 [&>ol]:list-decimal [&>ol]:ml-6 [&>a]:text-emerald-600 [&>a]:underline [&>img]:rounded-xl [&>img]:mx-auto [&>img]:my-4"
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
       </main>
