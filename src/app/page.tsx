@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import HeroSlider from '@/components/HeroSlider';
+import StatsSection from '@/components/StatsSection';
 import { ArrowRight, BookOpen, Award, Users, GraduationCap, Newspaper, Calendar, Sparkles, CheckCircle2 } from 'lucide-react';
 
 // Memaksa Next.js untuk selalu mengambil data terbaru dari Supabase (Tanpa Cache)
@@ -10,91 +12,37 @@ export const revalidate = 0;
 export default async function HomePage() {
   const { data: settings } = await supabase.from('site_settings').select('*').single();
   const { data: menus } = await supabase.from('menus').select('*').order('order_index');
+  const { data: heroSlides } = await supabase
+    .from('hero_slides')
+    .select('*')
+    .order('order_index', { ascending: true });
   const { data: featuredPosts } = await supabase.from('posts').select('*, categories(name)').order('created_at', { ascending: false }).limit(3);
   const { data: teachers } = await supabase.from('teachers').select('*').limit(4);
   const { data: galleries } = await supabase.from('galleries').select('*').limit(6);
+
+  // Fallback slide jika tabel hero_slides di Supabase belum ada isinya
+  const defaultSlides = [
+    {
+      id: 'default-1',
+      title: settings?.hero_title || 'Mewujudkan Generasi Islami, Cerdas, dan Berakhlaqul Karimah',
+      subtitle: settings?.hero_subtitle || 'Selamat Datang di Portal Resmi Madrasah Tsanawiyah Negeri 3 Natuna.',
+      image_url: settings?.hero_image_url || 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1200',
+    },
+  ];
+
+  const slidesToRender = heroSlides && heroSlides.length > 0 ? heroSlides : defaultSlides;
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800">
       <Navbar menus={menus || []} settings={settings} />
 
       {/* Hero Section */}
-      <section className="relative bg-slate-900 text-white overflow-hidden py-20 lg:py-32">
-        <div className="absolute inset-0 z-0 opacity-25 bg-cover bg-center" style={{ backgroundImage: `url(${settings?.hero_image_url || 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1200'})` }}></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/90 to-emerald-950/80 z-0"></div>
-
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-amber-300 text-xs font-semibold uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5" /> Selamat Datang di Website MTsN 3 Natuna
-            </div>
-            <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight tracking-tight">
-              {settings?.hero_title || 'Mewujudkan Generasi Islami, Cerdas, dan Berakhlaqul Karimah'}
-            </h1>
-            <p className="text-slate-300 text-base sm:text-lg max-w-2xl leading-relaxed">
-              {settings?.hero_subtitle || 'Selamat Datang di Portal Resmi Madrasah Tsanawiyah Negeri 3 Natuna.'}
-            </p>
-            <div className="flex flex-wrap gap-4 justify-center lg:justify-start pt-2">
-              <Link
-                href="/ppdb"
-                className="px-6 py-3.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl shadow-lg shadow-amber-500/25 transition transform hover:-translate-y-0.5 flex items-center gap-2"
-              >
-                Pendaftaran PPDB <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link
-                href="/profil"
-                className="px-6 py-3.5 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl border border-white/20 transition backdrop-blur-sm"
-              >
-                Jelajahi Profil
-              </Link>
-            </div>
-          </div>
-
-          <div className="lg:col-span-5 flex justify-center">
-            <div className="relative w-full max-w-md bg-white/10 p-3 rounded-2xl border border-white/10 backdrop-blur-md shadow-2xl">
-              <img
-                src={settings?.hero_image_url || 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=800'}
-                alt="Gedung Madrasah"
-                className="w-full h-80 object-cover rounded-xl shadow-inner"
-              />
-            </div>
-          </div>
-        </div>
+      <section className="max-w-7xl mx-auto px-4 sm:px-8 pt-6 pb-6 w-full">
+        <HeroSlider slides={slidesToRender} />
       </section>
 
       {/* Kartu Statistik Madrasah */}
-      <section className="-mt-10 relative z-20 max-w-7xl mx-auto px-4 sm:px-8 w-full">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white rounded-2xl p-6 shadow-xl border border-slate-100">
-          <div className="flex items-center gap-4 p-2">
-            <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center"><Users className="w-6 h-6" /></div>
-            <div>
-              <p className="text-2xl font-extrabold text-slate-800">450+</p>
-              <p className="text-xs text-slate-500 font-medium">Siswa Aktif</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 p-2">
-            <div className="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center"><GraduationCap className="w-6 h-6" /></div>
-            <div>
-              <p className="text-2xl font-extrabold text-slate-800">32</p>
-              <p className="text-xs text-slate-500 font-medium">Guru & Staf</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 p-2">
-            <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center"><BookOpen className="w-6 h-6" /></div>
-            <div>
-              <p className="text-2xl font-extrabold text-slate-800">12</p>
-              <p className="text-xs text-slate-500 font-medium">Rombongan Belajar</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 p-2">
-            <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center"><Award className="w-6 h-6" /></div>
-            <div>
-              <p className="text-2xl font-extrabold text-slate-800">A</p>
-              <p className="text-xs text-slate-500 font-medium">Akreditasi</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <StatsSection />
 
       {/* Sambutan Kepala Madrasah */}
       <section className="py-20 max-w-7xl mx-auto px-4 sm:px-8">
